@@ -12,20 +12,23 @@ def strip_html_tags(text):
     stripped_text = soup.get_text()
     stripped_text = re.sub(r'[\r|\n|\r\n]+', '\n', stripped_text)
     return stripped_text
+
 def remove_accented_chars(text):
-    text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').
-decode('utf-8', 'ignore')
+    text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('utf-8', 'ignore')
     return text
+
 def expand_contractions(text):
     return contractions.fix(text)
+
 def remove_special_characters(text, remove_digits=False):
-    pattern = r'[^a-zA-Z0-9\s]' if not remove_digits else r'[^a-zA-Z\s]'
-    text = re.sub(pattern, ", text)
+    pattern = r'[^a-zA-z0-9\s]' if not remove_digits else r'[^a-zA-z\s]'
+    text = re.sub(pattern, '', text)
     return text
+
 def remove_stopwords(text, is_lower_case=False):
     tokens = tokenizer.tokenize(text)
     tokens = [token.strip() for token in tokens]
-	if is_lower_case:
+    if is_lower_case:
         filtered_tokens = [token for token in tokens if token not in stopword_list]
     else:
         filtered_tokens = [token for token in tokens if token.lower() not in stopword_list]
@@ -38,34 +41,34 @@ def normalize_corpus(corpus, html_stripping=True, contraction_expansion=True,
                      stopword_removal=True, remove_digits=True):
 	normalized_corpus = []
     # normalize each document in the corpus
-    for doc in corpus:
+	for doc in corpus:
         # strip HTML
-        if html_stripping:
-            doc = strip_html_tags(doc)
+	        if html_stripping:
+	            doc = strip_html_tags(doc)
         # remove accented characters
-        if accented_char_removal:
-            doc = remove_accented_chars(doc)
+	        if accented_char_removal:
+	            doc = remove_accented_chars(doc)
         # expand contractions
-        if contraction_expansion:
-            doc = expand_contractions(doc)
+	        if contraction_expansion:
+	            doc = expand_contractions(doc)
         # lowercase the text
-        if text_lower_case:
-            doc = doc.lower()
+	        if text_lower_case:
+	            doc = doc.lower()
         # remove extra newlines
-        doc = re.sub(r'[\r|\n|\r\n]+', ' ',doc)
+	        doc = re.sub(r'[\r|\n|\r\n]+', ' ',doc)
         # lemmatize text
-        if text_lemmatization:
-            doc = lemmatize_text(doc)
+	        if text_lemmatization:
+	            doc = lemmatize_text(doc)
         # remove special characters and\or digits
-        if special_char_removal:
+	        if special_char_removal:
             # insert spaces between special characters to isolate them
-            special_char_pattern = re.compile(r'([{.(-)!}])')
-            doc = special_char_pattern.sub(" \\1 ", doc)
-            doc = remove_special_characters(doc, remove_digits=remove_digits)
+	            special_char_pattern = re.compile(r'([{.(-)!}])')
+	            doc = special_char_pattern.sub(" \\1 ", doc)
+	            doc = remove_special_characters(doc, remove_digits=remove_digits)
         # remove extra whitespace
-        doc = re.sub(' +', ' ', doc)
+	        doc = re.sub(' +', ' ', doc)
         # remove stopwords
-        if stopword_removal:
-            doc = remove_stopwords(doc, is_lower_case=text_lower_case)
-        normalized_corpus.append(doc)
-    return normalized_corpus
+	        if stopword_removal:
+	        	doc = remove_stopwords(doc, is_lower_case=text_lower_case)
+	        	normalized_corpus.append(doc)
+	return normalized_corpus
