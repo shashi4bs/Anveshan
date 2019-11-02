@@ -13,7 +13,7 @@ def strip_html_tags(text):
     stripped_text = re.sub(r'[\r|\n|\r\n]+', '\n', stripped_text)
     return stripped_text
 def remove_accented_chars(text):
-    text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').
+    text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').
 decode('utf-8', 'ignore')
     return text
 def expand_contractions(text):
