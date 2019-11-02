@@ -1,3 +1,37 @@
+import contractions
+from bs4 import BeautifulSoup
+import unicodedata
+import re
+from nltk.tokenize.toktok import ToktokTokenizer
+tokenizer = ToktokTokenizer()
+stopword_list = nltk.corpus.stopwords.words('english')
+
+def strip_html_tags(text):
+    soup = BeautifulSoup(text, "html.parser")
+    [s.extract() for s in soup(['iframe', 'script'])]
+    stripped_text = soup.get_text()
+    stripped_text = re.sub(r'[\r|\n|\r\n]+', '\n', stripped_text)
+    return stripped_text
+def remove_accented_chars(text):
+    text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').
+decode('utf-8', 'ignore')
+    return text
+def expand_contractions(text):
+    return contractions.fix(text)
+def remove_special_characters(text, remove_digits=False):
+    pattern = r'[^a-zA-Z0-9\s]' if not remove_digits else r'[^a-zA-Z\s]'
+    text = re.sub(pattern, ", text)
+    return text
+def remove_stopwords(text, is_lower_case=False):
+    tokens = tokenizer.tokenize(text)
+    tokens = [token.strip() for token in tokens]
+	if is_lower_case:
+        filtered_tokens = [token for token in tokens if token not in stopword_list]
+    else:
+        filtered_tokens = [token for token in tokens if token.lower() not in stopword_list]
+    filtered_text = ' '.join(filtered_tokens)
+    return filtered_text
+
 def normalize_corpus(corpus, html_stripping=True, contraction_expansion=True,
                      accented_char_removal=True, text_lower_case=True,
                      text_lemmatization=True, special_char_removal=True,
