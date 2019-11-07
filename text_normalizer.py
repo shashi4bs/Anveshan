@@ -2,7 +2,7 @@ def normalize_corpus(corpus, html_stripping=True, contraction_expansion=True,
                      accented_char_removal=True, text_lower_case=True,
                      text_lemmatization=True, special_char_removal=True,
                      stopword_removal=True, remove_digits=True):
-	normalized_corpus = []
+    normalized_corpus = []
     # normalize each document in the corpus
     for doc in corpus:
         # strip HTML
