@@ -1,9 +1,10 @@
 from app import seApp
 from flask import request, jsonify
 from db import resultsCollection
-from index import headIndex as index, searchToken
+#from treeIndex import headIndex as index, searchToken
+from index import treeIndex
 
-print(index)
+print(treeIndex)
 @seApp.route('/search')
 def search():
     searchResults = []
@@ -12,7 +13,7 @@ def search():
     #result = resultsCollection.find({"$text": {"$search": query}})
     for q in query.split():
         print(q)
-        result = searchToken(q)
+        result = treeIndex.searchToken(q)
         searchResults.append(result)
     '''
     for r in result:

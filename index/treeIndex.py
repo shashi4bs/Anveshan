@@ -1,45 +1,29 @@
+import sys
+import os
+sys.path.append(os.path.abspath('../Anvesion'))
+
+from text_normalizer import normalize_corpus
 from db import resultsCollection as r
-from nltk.tokenize import word_tokenize
-from nltk.stem import PorterStemmer
+import numpy as np
 
-result = r.find() #fetch all from db.results
-
+results = r.find()
 word_dictionary = dict()
-
-ps = PorterStemmer() #for stemming
-
 tokenized_text = []
 raw_text = []
-for res in result:
-    text = word_tokenize(res["text"][0])
-    text = [ps.stem(t) for t in text]
-    for t in text:
-        if t not in word_dictionary.keys():
-            word_dictionary[t] = 1
-        else:
-            word_dictionary[t] += 1
-    raw_text.append(res["text"][0])
-    text = list(set(text)) #extract unique elements from text
-    tokenized_text.append(text)
-keys = sorted(word_dictionary.items(), key=lambda x:(x[1], x[0]), reverse=True)
-#print(sorted(word_dictionary.items()))
-#print(len(word_dictionary.keys()))
 
 class Index:
     def __init__(self):
         self.name = None
-        self.nextIndexes = [] 
+        self.nextIndexes = []
         self.documents = []
 
-    def __str__(self):
-        return "name: {}, next: {}, documents: {}".format(self.name, [s.name for  s in self.nextIndexes], self.documents)
+    def __str_(self):
+        return "name: {}, next: {}, documents: {}".format(self.name, [s.name for s in self.nextIndexes], self.documents)
 
-headIndex = Index()
-headIndex.name = "HeadIndex"
-#print(keys)
 def sortByFrequency(e):
     return word_dictionary[e]
 #sort tokenized_text by frequency(keys)
+
 
 def iterateIndex(index, text, num):
     if index.name != text[0]:
@@ -64,16 +48,43 @@ def createIndex(parentIndex, text, num):
         #print(index)
     return index
 
+
+headIndex = Index()
+headIndex.name = 'HeadIndex'
 num = 0
+
+print("Creating Index")
+
+for res in results:
+    text = []
+    text.extend(np.array(normalize_corpus(res["text"])).ravel().tolist())
+    text.extend(np.array(normalize_corpus(res["author"])).ravel().tolist())
+    text.extend(np.array(normalize_corpus(res["tags"])).ravel().tolist())
+    #handling type(text) == list
+    to_remove = []
+    for t in text:
+        if type(t) is list:
+            text.extend(t)
+            to_remove.append(t)
+    for t in to_remove:
+        text.remove(t)
+
+    for t in text:            
+        if t not in word_dictionary.keys():
+            word_dictionary[t] = 1
+        else: 
+            word_dictionary[t] += 1
+    text = list(set(text))
+    tokenized_text.append(text)
+    raw_text.append(res["text"][0])
+
 for t in tokenized_text:
     sorted_t = sorted(t, key=sortByFrequency, reverse=True)
     if len(headIndex.nextIndexes) is 0:
         headIndex.nextIndexes.append(createIndex(headIndex, sorted_t, num))
         num += 1
-        #print(headIndex, num)
     else:
         num += 1
-        #print(headIndex, num)
         inheadIndex = [iterateIndex(n, sorted_t, num) for n in headIndex.nextIndexes]
         if not any(inheadIndex):
             headIndex.nextIndexes.append(createIndex(headIndex, sorted_t, num))
@@ -104,4 +115,4 @@ def searchToken(token):
         searchIndexedContent(n, token)
     return documents
 
-#search("die")
+print(searchToken("die"))
