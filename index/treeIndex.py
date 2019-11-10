@@ -6,12 +6,17 @@ from text_normalizer import normalize_corpus
 from db import resultsCollection as r
 import numpy as np
 
+#fetch all contents from db
 results = r.find()
-word_dictionary = dict()
-tokenized_text = []
-raw_text = []
+word_dictionary = dict() # stores word count
+tokenized_text = [] # stores documents as keys
+raw_text = [] # documents
 
 class Index:
+    '''
+        An index is a node in a tree.
+        node has name, branches -> nextIndexes, and value -> documents 
+    '''
     def __init__(self):
         self.name = None
         self.nextIndexes = []
@@ -20,31 +25,39 @@ class Index:
     def __str_(self):
         return "name: {}, next: {}, documents: {}".format(self.name, [s.name for s in self.nextIndexes], self.documents)
 
+#sort tokenized_text by frequency(keys)
 def sortByFrequency(e):
     return word_dictionary[e]
-#sort tokenized_text by frequency(keys)
 
 
 def iterateIndex(index, text, num):
+    '''
+        iterate over index tree till required node is found
+        and create a new node as branch if found node.
+    '''
     if index.name != text[0]:
         return False
     if len(text)>1:
         iterated = []
+
+        #iterate over all the branches
         for n in index.nextIndexes:
             iterated.append(iterateIndex(n, text[1:], num))
-        #print(iterated, any(iterated))
+
         if not any(iterated):
             index.nextIndexes.append(createIndex(index, text[1:], num))
     return True
 
 def createIndex(parentIndex, text, num):
+    '''
+        creates a new node for each key(text)
+    '''
     index = Index()
     index.name = text[0]
     if len(text)>1:
         index.nextIndexes.append(createIndex(index, text[1:], num))
     else:
         index.documents = raw_text[num-1]
-        #print(sorted(tokenized_text[num-1], key=sortByFrequency, reverse=True))
         #print(index)
     return index
 
@@ -53,13 +66,13 @@ headIndex = Index()
 headIndex.name = 'HeadIndex'
 num = 0
 
-print("Creating Index")
-
+#text processing too convert text -> list of keys
 for res in results:
     text = []
     text.extend(np.array(normalize_corpus(res["text"])).ravel().tolist())
     text.extend(np.array(normalize_corpus(res["author"])).ravel().tolist())
     text.extend(np.array(normalize_corpus(res["tags"])).ravel().tolist())
+    
     #handling type(text) == list
     to_remove = []
     for t in text:
@@ -78,6 +91,8 @@ for res in results:
     tokenized_text.append(text)
     raw_text.append(res["text"][0])
 
+print("Creating Index")
+
 for t in tokenized_text:
     sorted_t = sorted(t, key=sortByFrequency, reverse=True)
     if len(headIndex.nextIndexes) is 0:
@@ -94,6 +109,9 @@ print("Done Indexing")
 documents = []
 
 def extractDocument(index):
+    '''
+        extract documents with given index
+    '''
     global documents
     if len(index.documents)>0:
         documents.append(index.documents)
@@ -102,6 +120,9 @@ def extractDocument(index):
     
 
 def searchIndexedContent(index, token):
+    '''
+        search all indexes for the given token
+    '''
     if index.name == token:
         extractDocument(index)
     else:
