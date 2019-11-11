@@ -13,3 +13,4 @@ for res in results:
     author = res["author"]
     tags = res["tags"]
     print('Id: {}, text: {}, author: {}, tags: {}'.format(id_, text, author, tags))
+    

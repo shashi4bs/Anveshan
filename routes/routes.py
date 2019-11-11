@@ -3,6 +3,8 @@ from flask import request, jsonify
 from db import resultsCollection
 #from treeIndex import headIndex as index, searchToken
 from index import treeIndex
+from ranking.tfidf import score
+from helper import sortByScore
 
 print(treeIndex)
 @seApp.route('/search')
@@ -14,11 +16,9 @@ def search():
     for q in query.split():
         print(q)
         result = treeIndex.searchToken(q)
-        searchResults.append(result)
-    '''
-    for r in result:
-        del r['_id']
-        searchResults.append(r)
-    '''
-    #print(searchResults)
+        searchResults.extend(result)
+    
+    tfidfScore = score(query, searchResults, treeIndex.tokenized_text)
+    #sort by tfidfScore
+    searchResults = sortByScore(searchResults, tfidfScore)
     return jsonify(searchResults)
