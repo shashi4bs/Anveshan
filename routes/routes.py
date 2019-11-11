@@ -17,7 +17,7 @@ def search():
         print(q)
         result = treeIndex.searchToken(q)
         searchResults.extend(result)
-    
+    searchResults = list(set(searchResults))
     tfidfScore = score(query, searchResults, treeIndex.tokenized_text)
     #sort by tfidfScore
     searchResults = sortByScore(searchResults, tfidfScore)
