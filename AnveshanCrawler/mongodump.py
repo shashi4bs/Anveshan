@@ -1,5 +1,5 @@
 import pymongo
-from contants import MONGODB_LINK
+from constants import MONGODB_LINK
 
 
 class MongoPipeline(object):

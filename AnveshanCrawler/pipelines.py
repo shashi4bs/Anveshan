@@ -1,7 +1,7 @@
 #from AnveshanCrawler.items import Article
 import os
 import sys
-from contants import DIR
+from constants import DIR
 sys.path.append(os.path.abspath(DIR))
 
 from scrapy.exceptions import DropItem
