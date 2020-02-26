@@ -4,6 +4,7 @@ import unicodedata
 import re
 import nltk
 from nltk.tokenize.toktok import ToktokTokenizer
+from nltk.stem import PorterStemmer
 tokenizer = ToktokTokenizer()
 stopword_list = nltk.corpus.stopwords.words('english')
 
@@ -79,6 +80,7 @@ class Tokenizer(object):
     
     def __init__(self):
         self.tokenizer = ToktokTokenizer()
+        self.stemmer = PorterStemmer()
         self.stopwords = nltk.corpus.stopwords.words('english')
 
 
@@ -86,7 +88,9 @@ class Tokenizer(object):
         self.content = content.strip()
         self.tokens = self.tokenizer.tokenize(content)
         filtered_tokens = self.__removeStopWords()
-        self.filtered_tokens = list(set(filtered_tokens))
+        #perfrom stemming
+        filtered_tokens = self.__token_stemming(filtered_tokens)
+        self.filtered_tokens = self.__get_frequency(filtered_tokens)
         return self.filtered_tokens
 
     def __removeStopWords(self, is_lower_case=False):
@@ -98,4 +102,15 @@ class Tokenizer(object):
         #filtered_text = ' '.join(filtered_tokens)
         return filtered_tokens
 
+    def __get_frequency(self, tokens):
+        filtered_tokens = dict()
+        for index in tokens:
+            if index not in filtered_tokens.keys():
+                filtered_tokens[index] = 1
+            else:
+                filtered_tokens[index] += 1
 
+        return filtered_tokens
+
+    def __token_stemming(self, tokens):
+       return [self.stemmer.stem(token) for token in tokens] 

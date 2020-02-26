@@ -17,10 +17,10 @@ class MongoPipeline(object):
             result = self.index_url_map.find(query)
             num_entries = result.count()
             if num_entries == 0:
-                insert_query = {index: [item['url']]}
+                insert_query = {index: [[item['url'], item['content'][index]]]}
                 self.index_url_map.insert_one(insert_query)
             else:
-                update_query = {index: item['url']}
+                update_query = {index: [item['url'], item['content'][index]]}
                 for r in result:
                     self.index_url_map.update(
                         {'_id': r['_id']},
@@ -36,6 +36,7 @@ class MongoPipeline(object):
     def save(self, item):
         print("save invoked from MogoPipeline")
         #save index - url mapping
+        
         for index in item['content']:
             self.__save_index(index, item)  
         
@@ -47,10 +48,19 @@ class MongoPipeline(object):
         query = {'url': item['url']} 
         num_entries = self.content.find(query).count()
         if num_entries == 0:
-            insert_query = {'url': item['url'], 'title': item['title'], 'links':item['links']}
+            insert_query = {'url': item['url'], 'title': item['title'], 'links':item['links'], 'doc_length': sum(item['content'].values())}
             self.content.insert_one(insert_query)
             print("Saved : {}".format(insert_query))
         else:
             pass
         #id_ = self.db.insert_one()
         print("Saved ID")
+        
+
+    def get_content_by_index(self, tokens):
+        result = []
+        for token in tokens:
+            query = {token: {'$exists': 'true'}}
+            r = self.db.index_url_map.find(query)
+            result.append(r)
+        return result
