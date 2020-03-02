@@ -1,7 +1,8 @@
 from app import app
 import os
-print(os.getcwd())
+
 from search import Search
+import json
 
 anveshan = Search()
 
@@ -13,4 +14,7 @@ def home():
 @app.route('/search/<query>')
 def search(query):
     results = anveshan.search(query)
-    return query
+    [print(res['url'], ' ', res['title']) for res in results]
+    response = []
+    [response.append({'url': res['url'], 'title': res['title']}) for res in results]
+    return json.dumps(response)
