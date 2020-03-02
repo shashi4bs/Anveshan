@@ -1,6 +1,6 @@
 import pymongo
 from constants import MONGODB_LINK
-
+import numpy as np
 
 class MongoPipeline(object):
     def __init__(self, db_name="AnveshanDB"):
@@ -58,9 +58,20 @@ class MongoPipeline(object):
         
 
     def get_content_by_index(self, tokens):
-        result = []
+        index_search_result = []
+        content_search_result = []
         for token in tokens:
             query = {token: {'$exists': 'true'}}
-            r = self.db.index_url_map.find(query)
-            result.append(r)
-        return result
+            result = self.db.index_url_map.find(query)
+            [index_search_result.append(r) for r in result]
+
+        #search content for url
+        for r in index_search_result:
+            #iterate over dict keys except _id
+            for urls in list(r.values())[1:]:
+                #search content over unique list of urls
+                for url in set(np.array(urls)[:, 0]):
+                    query = {'url': url}
+                    result = self.db.content.find(query)
+                    [content_search_result.append(r) for r in result]
+        return index_search_result, content_search_result
