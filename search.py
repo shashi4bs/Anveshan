@@ -1,6 +1,7 @@
 from mongodump import MongoPipeline
 from text_normalizer import Tokenizer
 from bm25 import BM25
+from helper import combine_index_content_result
 
 class Search(object):
     def __init__(self):
@@ -15,10 +16,17 @@ class Search(object):
         
         #[print(i['title']) for i in self.content_search_result]
         #[print(i) for i in self.index_search_result]
-
+        combined_result = combine_index_content_result(\
+            self.index_search_result,\
+            self.content_search_result\
+        )
         bm25 = BM25(query_tokens)
-        score = bm25.get_relevance_score(self.index_search_result, self.content_search_result)
-        print(score)
+
+        #bm25 get_relevance_score for combined result
+        score = bm25.get_relevance_score(combined_result)
+        
+        #score = bm25.get_relevance_score(self.index_search_result, self.content_search_result)
+        #print(score)
 
         def get_score(content):
             return score[content['url']]
