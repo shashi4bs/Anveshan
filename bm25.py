@@ -55,5 +55,5 @@ class BM25(object):
                 ))
             score[result['url']] =  score_D_Q
 
-        print(score)
+        #print(score)
         return score
