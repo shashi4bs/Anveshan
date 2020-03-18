@@ -20,7 +20,7 @@ class Search(object):
             graph = self.graph,\
             score = self.db.get_pr_score())
         
-        print(self.graph.get_adjacency_matrix())
+        #print(self.graph.get_adjacency_matrix())
         
     def search(self, query):
         self.index_search_result = dict()
