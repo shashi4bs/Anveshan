@@ -16,14 +16,18 @@ class PageRank(object):
                                 alpha=alpha,\
                                 max_iter=10,\
                                 tol=1e-03)
+            pr = {}
+            for index in self.pr:
+                pr[self.links[index]] = self.pr[index]
+            self.pr = pr
 
     def get_score(self):
         #pr = nx.pagerank(self.graph, self.alpha)
         score = {}
-        index = 0
+        
         for link in self.links:
-            score[link] = self.pr[index]
-            index += 1
+            score[link] = self.pr[link]
+            
 
         return score
 

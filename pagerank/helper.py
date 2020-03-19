@@ -30,25 +30,56 @@ def generate_pr_matrix(content_search_result):
 
 def generate_graph(content_search_result):
     graph = nx.Graph()
-    links = set()
+    
+    '''
+    links = list()
+    edges = []
+
+    # to generate for links only in content search result
     for content in content_search_result:
-        links.add(content['url'])
-        [links.add(link) for link in content['links']]
-    links = list(links)
+        links.append(content['url'])
     print("Generating Graph for {} links".format(len(links)))
     
     print("Generating Nodes")
     graph.add_nodes_from([_ for _ in range(len(links))])
-
+   
     print("Adding edges")
-    edges = []
-    processed_links = 0
     for content in content_search_result:
-        link = links[processed_links]
-        if link in content['links']:
-            edges.append((processed_links, links.index(link)))
-        processed_links += 1
-        #print("Added edges for {} links".format(processed_links))
+        for link in content['links']:
+            if link in links:
+                edges.append((links.index(content['url']), links.index(link)))
+    
+    print(edges)
+    '''
+    #to generate over all links
+    links = set()
+    edges = set()
+    for content in content_search_result:
+        links.add(content['url'])
+        [links.add(link) for link in content['links']]
 
+    links = list(links)
+
+    print("Generating {}  Nodes".format(len(links)))
+    graph.add_nodes_from([_ for _ in range(len(links))])
+
+    print("Adding Edges")
+    
+    processed = 0
+    for content in content_search_result:
+        print("Adding edges : ", processed)
+        processed += 1
+        for l in content['links']:
+            #add content['links'] -> content['url']
+            edges.add((links.index(l), links.index(content['url'])))
+    '''       
+    for content in content_search_result:
+        url = content['url']
+        for c in content_search_result:
+            if url in c['links']:
+                edges.add((links.index(content['url']), links.index(url)))
+    '''
+    edges = list(edges)
+    print(edges)
     graph.add_edges_from(edges)
     return graph, links
