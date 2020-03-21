@@ -29,28 +29,12 @@ def generate_pr_matrix(content_search_result):
     return pr_matrix
 
 def generate_graph(content_search_result):
-    graph = nx.Graph()
     
-    '''
-    links = list()
-    edges = []
+    #graph = nx.Graph()
+    
+    #directed graph
 
-    # to generate for links only in content search result
-    for content in content_search_result:
-        links.append(content['url'])
-    print("Generating Graph for {} links".format(len(links)))
-    
-    print("Generating Nodes")
-    graph.add_nodes_from([_ for _ in range(len(links))])
-   
-    print("Adding edges")
-    for content in content_search_result:
-        for link in content['links']:
-            if link in links:
-                edges.append((links.index(content['url']), links.index(link)))
-    
-    print(edges)
-    '''
+    graph = nx.DiGraph()
     #to generate over all links
     links = set()
     edges = set()
@@ -72,14 +56,51 @@ def generate_graph(content_search_result):
         for l in content['links']:
             #add content['links'] -> content['url']
             edges.add((links.index(l), links.index(content['url'])))
-    '''       
-    for content in content_search_result:
-        url = content['url']
-        for c in content_search_result:
-            if url in c['links']:
-                edges.add((links.index(content['url']), links.index(url)))
-    '''
+    
     edges = list(edges)
     print(edges)
     graph.add_edges_from(edges)
+    return graph, links
+
+def extract_links(content_search_result):
+    content_links = set()
+    for content in content_search_result:
+        content_links.add(content['url'])
+        [content_links.add(link) for link in content['links']]
+
+    return list(content_links)
+
+def check_graph_for_consistency(links, content_search_result):
+    
+    content_links = extract_links(content_search_result)
+
+    if len(links) != len(content_links):
+        return False
+    else:
+        return True
+
+def make_graph_consistent(graph, links, content_search_result):
+    content_links = extract_links(content_search_result)
+
+    if len(links) != len(content_links):
+        node_list = list(graph.nodes)
+        max_node = max(node_list)
+        
+        new_nodes_to_add = []
+        for i in range(1, len(content_links) - len(links) + 1):
+            new_nodes_to_add.append(max_node + i)
+        graph.add_nodes_from(new_nodes_to_add)
+
+        new_edges = set()
+        
+        #extract new links
+        new_links = list(set(content_links) - set(links))
+        links.extend(new_links)
+        for content in content_search_result:
+            if content['url'] in new_links:
+                for l in content["links"]:
+                    new_edges.add((links.index(l), links.index(content["url"])))
+        new_edges = list(new_edges)
+        graph.add_edges_from(new_edges)
+    
     return graph, links

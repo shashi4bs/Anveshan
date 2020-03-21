@@ -1,7 +1,7 @@
-from mongodump import MongoPipeline
+from mongo.mongodump import MongoPipeline
 from text_normalizer import Tokenizer
 from bm25 import BM25
-from helper import combine_index_content_result
+from helper import combine_index_content_result, combine_score
 from pagerank.pagerank import PageRank
 from pagerank.graph import Graph
 
@@ -41,10 +41,13 @@ class Search(object):
         
         #pagerank
         pr_score = self.pr.get_score_for_search(self.content_search_result)
-         
+        combined_score = combine_score(score , pr_score)
+ 
         def get_score(content):
-            return score[content['url']] + pr_score[content['url']]
-         
+            print(content['url'], ": BM25 : ", score[content['url']], "PR: ", pr_score[content['url']])
+            return combined_score[content['url']]
+ 
+        
         return sorted(self.content_search_result, key=get_score, reverse=True)
 
 class result(object):
