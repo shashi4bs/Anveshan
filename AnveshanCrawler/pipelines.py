@@ -7,7 +7,7 @@ sys.path.append(os.path.abspath(DIR))
 from scrapy.exceptions import DropItem
 import pymongo
 from text_normalizer import Tokenizer
-from mongodump import MongoPipeline
+from mongo.mongodump import MongoPipeline
 
 
 
