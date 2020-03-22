@@ -41,4 +41,3 @@ class AnveshanResource(MongoPipeline):
         for l in links:
             link = l["links"]
         return json_graph, link
-        
