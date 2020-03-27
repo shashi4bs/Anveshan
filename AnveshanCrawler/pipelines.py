@@ -31,9 +31,13 @@ class AnveshancrawlerPipeline(object):
         #item['content'] -> list of text contents.
         content = "".join(item['content'])
         item['tags'] = tagger.generate_tag(content)
+        #tag processing-> remove it from here later
+        item['tags'] = item['tags'].replace('\n', '')
+        item['tags'] = item['tags'].lower()
+
         tokenizedContent = processContent(content)
         item['content'] = tokenizedContent.filtered_tokens
         #print(processContent(item['title']))
         
-        #db.save(item) ##store tokenizedContent and title in form of inverted index
+        db.save(item) ##store tokenizedContent and title in form of inverted index
         return item

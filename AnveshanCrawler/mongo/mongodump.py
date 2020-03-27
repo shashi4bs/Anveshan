@@ -42,6 +42,9 @@ class MongoPipeline(object):
         for index in item['content']:
             self.__save_index(index, item)  
         
+        #index content by tag
+        self.__save_index(item['tags'], item)
+
         #index from title
         for index in item['title']:
             self.__save_index(index, item)
@@ -50,7 +53,7 @@ class MongoPipeline(object):
         query = {'url': item['url']} 
         num_entries = self.content.find(query).count()
         if num_entries == 0:
-            insert_query = {'url': item['url'], 'title': item['title'], 'links':item['links'], 'doc_length': sum(item['content'].values())}
+            insert_query = {'url': item['url'], 'title': item['title'], 'tags': item['tags'], 'links':item['links'], 'doc_length': sum(item['content'].values())}
             self.content.insert_one(insert_query)
             print("Saved : {}".format(insert_query))
         else:
@@ -84,24 +87,6 @@ class MongoPipeline(object):
         [content_search_result.append(r) for r in result]
         return content_search_result
 
-    '''
-    def save_pr_score(self, pr_score):
-        print(pr_score)
-        for link in pr_score:
-            query = {"link" : link}
-            result = self.db.pr_score.find(query)
-            if result.count() == 0:
-                insert_query = {"link": link, "score": pr_score[link]}
-                self.db.pr_score.insert_one(insert_query)
-            else:
-                update_query = {"score": pr_score[link]}
-                for r in result:
-                    self.db.pr_score.update(
-                        {'_id':r['_id']},
-                        {'$set': update_query}
-                    )
-        print("Page Rank Score Saved")                
-    '''
 
     def save_pr_score(self, pr_score):
         print("Storing {} entries in db".format(len(pr_score.keys())))
