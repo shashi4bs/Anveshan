@@ -11,11 +11,11 @@ class AnveshanResource(MongoPipeline):
         # graph -> JSON #use nx.node_link_data()
         query = {name: {"$exists": "true"}}
         graph_result = self.graphs.find(query)
-        link_result = self.links.find({"links": {"$exists": "true"}})
+        link_result = self.links.find({name: {"$exists": "true"}})
         if graph_result.count() == 0:
             insert_query = {name: json.dumps(graph)}
-            self.graphs.insert_one(insert_query)
-            self.links.insert_one({"links": links})
+            self.graphs.insert(insert_query)
+            self.links.insert({name: links})
 
         else:
             for res in result:
@@ -25,7 +25,7 @@ class AnveshanResource(MongoPipeline):
                     update_query
                 )
             for link_res in link_result:
-                update_query = {"$set": {"links": links}}
+                update_query = {"$set": {name: links}}
                 self.links.update(
                     {'_id': link_res['_id']},
                     update_query
@@ -34,10 +34,12 @@ class AnveshanResource(MongoPipeline):
     def load_graph(self, name):
         query = {name: {"$exists": "true"}}
         graph = self.graphs.find(query)
+        json_graph = None
+        link = None
         for g in graph:
             json_graph = json.loads(g[name])
-        query = {"links": {"$exists": "true"}}
+        query = {name: {"$exists": "true"}}
         links = self.links.find(query)
         for l in links:
-            link = l["links"]
+            link = l[name]
         return json_graph, link

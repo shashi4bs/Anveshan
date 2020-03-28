@@ -20,7 +20,7 @@ class MongoPipeline(object):
             num_entries = result.count()
             if num_entries == 0:
                 insert_query = {index: [[item['url'], item['content'][index]]]}
-                self.index_url_map.insert_one(insert_query)
+                self.index_url_map.insert(insert_query)
             else:
                 update_query = {index: [item['url'], item['content'][index]]}
                 for r in result:
@@ -54,7 +54,7 @@ class MongoPipeline(object):
         num_entries = self.content.find(query).count()
         if num_entries == 0:
             insert_query = {'url': item['url'], 'title': item['title'], 'tags': item['tags'], 'links':item['links'], 'doc_length': sum(item['content'].values())}
-            self.content.insert_one(insert_query)
+            self.content.insert(insert_query)
             print("Saved : {}".format(insert_query))
         else:
             pass
