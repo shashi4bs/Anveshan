@@ -2,6 +2,7 @@ import networkx as nx
 from pagerank.helper import generate_graph, check_graph_for_consistency, make_graph_consistent
 from mongo.resources import AnveshanResource
 
+global anveshan_resource
 anveshan_resource = AnveshanResource()
 
 class Graph(nx.Graph):

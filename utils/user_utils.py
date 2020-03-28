@@ -1,5 +1,6 @@
 from app import anveshan_user_db
 from db import User
+from utils.resource_utils import allocate_resource_for_user
 
 def register_user(user):
     status = {}
@@ -23,7 +24,8 @@ def register_user(user):
     new_user.username = user['username']
     new_user.password = user['password']
     new_user.save()
-
+        
+    allocate_resource_for_user(new_user)
     status['status'] = 'OK'
     status['code'] = 200
     status['message'] = "Success"
