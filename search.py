@@ -23,7 +23,7 @@ class Search(object):
         #print(self.pr)
         #print(self.graph.get_adjacency_matrix())
         
-    def search(self, query):
+    def search(self, query, user=None):
         self.index_search_result = dict()
         self.content_search_result = dict()
         tokenizer = Tokenizer()
@@ -40,7 +40,12 @@ class Search(object):
         score = bm25.get_relevance_score(combined_result)
         
         #pagerank
-        pr_score = self.pr.get_score_for_search(self.content_search_result)
+        if user is None:
+            pr_score = self.pr.get_score_for_search(self.content_search_result)
+        else:
+            #personalized pr_score for user
+            #change it to user specific search
+            pr_score = self.pr.get_score_for_search(self.content_search_result)
         combined_score = combine_score(score , pr_score)
  
         def get_score(content):

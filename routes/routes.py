@@ -37,7 +37,7 @@ def personalised_search(user, query):
     print(user, query)
     user = current_user
     try:
-        results = anveshan.search(query)
+        results = anveshan.search(query, user=user)
         #[print(res['url'], ' ', res['title']) for res in results]
         response = []
         [response.append({'url': res['url'], 'title': res['title']}) for res in results]
