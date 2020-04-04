@@ -88,26 +88,26 @@ class MongoPipeline(object):
         return content_search_result
 
 
-    def save_pr_score(self, pr_score):
+    def save_pr_score(self, pr_score, name="pr"):
         print("Storing {} entries in db".format(len(pr_score.keys())))
-        query = {"pr": {"$exists": "true"}}
+        query = {name: {"$exists": "true"}}
         pr = self.db.pr_score.find(query)
         if pr.count() == 0:
             self.db.pr_score.save({
-            "pr": json.dumps(pr_score) 
+            name: json.dumps(pr_score) 
             })
         else:
             for p in pr:
                 self.db.pr_score.update(
                     {'_id': p['_id']},
-                    {'$set':  {"pr" : json.dumps(pr_score)}}
+                    {'$set':  {name : json.dumps(pr_score)}}
                 )
                 
         print("PageRank saved in db")
 
-    def get_pr_score(self):
-        query = {"pr": {"$exists": "true"}}
+    def get_pr_score(self, name="pr"):
+        query = {name: {"$exists": "true"}}
 
         pr = self.db.pr_score.find(query)
         for p in pr:
-            return json.loads(p["pr"])
+            return json.loads(p[name])

@@ -18,7 +18,7 @@ class AnveshanResource(MongoPipeline):
             self.links.insert({name: links})
 
         else:
-            for res in result:
+            for res in graph_result:
                 update_query = {"$set": {name: json.dumps(graph)}}
                 self.graphs.update(
                     {'_id': res['_id']},
