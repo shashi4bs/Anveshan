@@ -33,15 +33,15 @@ def search(query):
 
 @app.route('/<user>/search/<query>', methods=['GET'])
 @login_required
-def personalised_search(user, query):
+def personalized_search(user, query):
     print(user, query)
     user = current_user
     try:
-        results = anveshan.search(query, user=user)
-        #[print(res['url'], ' ', res['title']) for res in results]
+        results = anveshan.personalized_search(query, user_resources[user.username])
         response = []
         [response.append({'url': res['url'], 'title': res['title']}) for res in results]
         return json.dumps(response)
+
     except Exception as e:
         print(e)
         return json.dumps("No result Found")

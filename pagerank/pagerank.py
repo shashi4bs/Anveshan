@@ -28,7 +28,6 @@ class PageRank(object):
         for link in self.links:
             score[link] = self.pr[link]
             
-
         return score
 
     def get_score_for_search(self, content_search_result):
@@ -36,3 +35,11 @@ class PageRank(object):
         for content in content_search_result:
             score[content['url']] = self.pr[content['url']]
         return score
+
+    @staticmethod
+    def filter_score_from_pr_score(content_search_result, pr_score):
+        score = {}
+        for content in content_search_result:
+            score[content['url']] = pr_score[content['url']]
+        return score
+
