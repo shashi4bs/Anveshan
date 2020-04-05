@@ -8,7 +8,8 @@ from pagerank.graph import Graph
 class Search(object):
     def __init__(self, generate_pr_score=True):
         self.db = MongoPipeline('AnveshanDB')
-        self.graph = Graph(self.db.get_content())
+        self.content = self.db.get_content()
+        self.graph = Graph(self.content)
         if generate_pr_score:
             self.pr = PageRank(self.graph)
             print("calc pr")

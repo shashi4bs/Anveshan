@@ -2,7 +2,7 @@ from pagerank.helper import generate_pr_matrix, generate_graph
 import networkx as nx
 
 class PageRank(object):
-    def __init__(self, graph, score=None, alpha=0.99):
+    def __init__(self, graph, score=None, alpha=0.99, personalization=None):
         #print("Generating PageRank Matrix")
         #self.pr_matrix = generate_pr_matrix(content_search_result)
         #self.graph, self.links = generate_graph(content_search_result)
@@ -15,7 +15,8 @@ class PageRank(object):
             self.pr = nx.pagerank(self.graph, \
                                 alpha=alpha,\
                                 max_iter=10,\
-                                tol=1e-03)
+                                tol=1e-03, 
+                                personalization=personalization)
             pr = {}
             for index in self.pr:
                 pr[self.links[index]] = self.pr[index]

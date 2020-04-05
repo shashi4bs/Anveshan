@@ -2,11 +2,13 @@ from app import app, login_manager
 import os
 from search import Search
 import json
+from bson import Binary
 from flask import request, redirect, url_for
 from flask_login import login_user, login_required, logout_user, current_user
 from utils.user_utils import register_user, validate_user
-from utils.resource_utils import load_user_resource
+from utils.resource_utils import load_user_resource, get_tag_from_content, update_weights
 from db import User
+import traceback
 
 anveshan = Search(generate_pr_score=False)
 
@@ -25,7 +27,7 @@ def search(query):
         results = anveshan.search(query)
         #[print(res['url'], ' ', res['title']) for res in results]
         response = []
-        [response.append({'url': res['url'], 'title': res['title']}) for res in results]
+        [response.append({'_id': str(res['_id']), 'url': res['url'], 'title': res['title']}) for res in results]
         return json.dumps(response)
     except Exception as e:
         print(e)
@@ -39,11 +41,12 @@ def personalized_search(user, query):
     try:
         results = anveshan.personalized_search(query, user_resources[user.username])
         response = []
-        [response.append({'url': res['url'], 'title': res['title']}) for res in results]
+        [response.append({'_id': str(res['_id']), 'url': res['url'], 'title': res['title']}) for res in results]
         return json.dumps(response)
 
     except Exception as e:
         print(e)
+        traceback.print_exc()
         return json.dumps("No result Found")
 
 @app.route('/register', methods=['POST'])
@@ -77,6 +80,24 @@ def login():
         user_resources[current_user.username] = resource
 
     return status
+
+
+@app.route('/update_bias', methods=['POST'])
+@login_required
+def update_bias():
+    global user_resources
+    user = current_user
+    _id = request.json['_id']
+    tags = get_tag_from_content(_id)
+    print(user_resources.keys())
+    user_resources[user.username]["pr_score"] = update_weights(tags, user, user_resources[user.username])
+    status = {
+        'status' : 'OK',
+        'code' : 200,
+        'message' : "Success"
+    }
+    return status
+
 
 @login_manager.user_loader
 def load_user(username):
