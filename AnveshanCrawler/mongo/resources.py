@@ -6,6 +6,7 @@ class AnveshanResource(MongoPipeline):
         MongoPipeline.__init__(self, db_name)
         self.graphs = self.db["graphs"]
         self.links = self.db["links"]
+        self.p_vector = self.db["p_vector"]
 
     def save_graph(self, graph, links, name):
         # graph -> JSON #use nx.node_link_data()
@@ -43,3 +44,24 @@ class AnveshanResource(MongoPipeline):
         for l in links:
             link = l[name]
         return json_graph, link
+
+    def load_pvector(self, name):
+        query = {name : {"$exists": "true"}}
+        p_vec = self.p_vector.find(query)
+        for p in p_vec:
+            return json.loads(p[name])
+
+    def save_pvector(self, p_vec, name):
+        query = {name : {"$exists" : "true"}}
+        result = self.p_vector.find(query)
+        if(result.count() == 0):
+            insert_query = {name : json.dumps(p_vec)}
+            self.p_vector.save(insert_query)
+        else:
+            for r in result:
+                update_query = {'$set' : {name: json.dumps(p_vec)}}
+                self.p_vector.update(
+                    {'_id' : r['_id']},
+                    update_query
+                )
+        return
