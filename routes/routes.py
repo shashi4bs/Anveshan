@@ -90,7 +90,7 @@ def update_bias():
     _id = request.json['_id']
     tags = get_tag_from_content(_id)
     print(user_resources.keys())
-    user_resources[user.username]["pr_score"] = update_weights(tags, user, user_resources[user.username])
+    update_weights(anveshan.graph.graph, tags, user, user_resources[user.username], anveshan.graph.links)
     status = {
         'status' : 'OK',
         'code' : 200,

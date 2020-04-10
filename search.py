@@ -56,7 +56,7 @@ class Search(object):
         return sorted(self.content_search_result, key=get_score, reverse=True)
 
     def personalized_search(self, query, user_resource):
-        #user resource contain user specific graph, pr_score, and links
+        #user resource contain user specific pr_score, and personalization_vector
         return self.search(query, user_resource)
 
 

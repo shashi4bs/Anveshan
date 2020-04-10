@@ -5,7 +5,7 @@ from mongo.resources import AnveshanResource
 global anveshan_resource
 anveshan_resource = AnveshanResource()
 
-class Graph(nx.Graph):
+class Graph():
     def __init__(self, content_search_result):
         try:
             self.load()

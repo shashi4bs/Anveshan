@@ -44,3 +44,13 @@ class PageRank(object):
             score[content['url']] = pr_score[content['url']]
         return score
 
+    @staticmethod
+    def make_pr_score(pr_score, links):
+        score = {}
+        test = []
+        for index in pr_score:
+            test.append(pr_score[index])
+        print("test", max(test))
+        for index in pr_score:
+           score[links[index]] =  pr_score[index]
+        return score
