@@ -9,6 +9,7 @@ from utils.user_utils import register_user, validate_user
 from utils.resource_utils import load_user_resource, get_tag_from_content, update_weights
 from db import User
 import traceback
+from query import Query
 
 anveshan = Search(generate_pr_score=False)
 
@@ -24,14 +25,24 @@ def search(query):
     if current_user.is_authenticated:
         redirect("/{}/search/{}".format(current_user.username, query))
     try:
+        query = Query(query)
+        print(query)
         results = anveshan.search(query)
         #[print(res['url'], ' ', res['title']) for res in results]
+        urls = []
         response = []
-        [response.append({'_id': str(res['_id']), 'url': res['url'], 'title': res['title']}) for res in results]
+        [(response.append({'_id': str(res['_id']), 'url': res['url'], 'title': res['title']}), urls.append(res['url'])) for res in results if res['url'] not in urls]
+        response = {"search_results": response}
+        if query.do_you_mean:
+                response["do_you_mean"] = query.true_query
         return json.dumps(response)
     except Exception as e:
         print(e)
-        return json.dumps("No result Found")
+        traceback.print_exc()
+        response = {"search_results": "No result Found"}
+        if query.do_you_mean:
+                response["do_you_mean"] = query.true_query
+        return json.dumps(response)
 
 @app.route('/<user>/search/<query>', methods=['GET'])
 @login_required
@@ -39,15 +50,25 @@ def personalized_search(user, query):
     print(user, query)
     user = current_user
     try:
+        query = Query(query)
         results = anveshan.personalized_search(query, user_resources[user.username])
+        urls = []        
         response = []
-        [response.append({'_id': str(res['_id']), 'url': res['url'], 'title': res['title']}) for res in results]
+        [(response.append({'_id': str(res['_id']), 'url': res['url'], 'title': res['title']}), urls.append(res['url'])) for res in results if res['url'] not in urls]
+        
+        response = {"search_results": response}
+        if query.do_you_mean:
+                response["do_you_mean"] = query.true_query
+        return json.dumps(response)
         return json.dumps(response)
 
     except Exception as e:
         print(e)
         traceback.print_exc()
-        return json.dumps("No result Found")
+        response = {"search_results": "No result Found"}
+        if query.do_you_mean:
+                response["do_you_mean"] = query.true_query
+        return json.dumps(response)
 
 @app.route('/register', methods=['POST'])
 def register():

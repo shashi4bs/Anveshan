@@ -27,9 +27,12 @@ class Search(object):
     def search(self, query, user_resource=None):
         self.index_search_result = dict()
         self.content_search_result = dict()
-        tokenizer = Tokenizer()
-        query_tokens = tokenizer.processItem(query)
-        self.index_search_result, self.content_search_result = self.db.get_content_by_index(query_tokens)
+        #tokenizer = Tokenizer()
+        #query_tokens = tokenizer.processItem(query)
+        query_tokens = query.true_tokens
+        print(query.token_weights)
+        self.index_search_result, self.content_search_result = self.db.get_content_by_index(query_tokens, query.token_weights)
+        print(len(self.index_search_result), len(self.content_search_result))
         
         combined_result = combine_index_content_result(\
             self.index_search_result,\
@@ -45,7 +48,7 @@ class Search(object):
             pr_score = self.pr.get_score_for_search(self.content_search_result)
         else:
             pr_score = PageRank.filter_score_from_pr_score(self.content_search_result, user_resource["pr_score"])
-        print(user_resource, pr_score)
+        #print(user_resource, pr_score)
         combined_score = combine_score(score , pr_score)
  
         def get_score(content):
@@ -53,7 +56,7 @@ class Search(object):
             return combined_score[content['url']]
  
         
-        return sorted(self.content_search_result, key=get_score, reverse=True)
+        return sorted([content[0] for content in self.content_search_result], key=get_score, reverse=True)
 
     def personalized_search(self, query, user_resource):
         #user resource contain user specific pr_score, and personalization_vector

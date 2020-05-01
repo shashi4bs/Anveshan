@@ -1,6 +1,6 @@
 def combine_index_content_result(index_result, content_result):
     result = []
-    for content in content_result:
+    for (content, w) in content_result:
         res = {
         'url': content['url'],
         'title': content['title'],
@@ -8,18 +8,22 @@ def combine_index_content_result(index_result, content_result):
         'count': [],
         'doc_length': content['doc_length']
         }
-        for index in index_result:
+        for (index, w_) in index_result:
             idx_list = list(index.keys())
             idx_list.remove('_id')
             idx = idx_list[0]
-            
-            for url, count in index[idx]:
+            #print(index, idx)
+            for urls in index[idx]:
+                try:
+                        url, count = urls
+                except:
+                        continue                
                 if content['url'] == url:
                     res['index'].append(idx)
                     res['count'].append(count)
                     break
-        print(res)
-        result.append(res)
+        #print(res)
+        result.append((res, w))
         
     return result
 

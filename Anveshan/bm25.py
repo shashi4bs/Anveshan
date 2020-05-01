@@ -28,20 +28,21 @@ class BM25(object):
         #using idf = log(1 + N/n)
         for q in self.query:
             self.idf[q] = math.log(1 + \
-            (total_retrieved_documents / self.idf[q]))
+            (total_retrieved_documents / (self.idf[q] + 0.1)))
         return self.idf
 
     def get_relevance_score(self, results):
         
         #self.idf = _get_idf(results)
-        self._get_idf(results)
+        self._get_idf([r[0] for r in results])
         
         #calculate relevance score
         #refering bm25 calculation method - https://en.wikipedia.org/wiki/Okapi_BM25
-        avg_doc_len = sum([result['doc_length'] for result in results])/len(results)
+        avg_doc_len = sum([result[0]['doc_length'] for result in results])/len(results)
 
         score = {}
-        for result in results:
+        for (result, w) in results:
+			#w -> query token weight
             score_D_Q = 0
             for index in result['index']:
                 #f_qi_d = no of times term qi appeared in document d 
@@ -52,7 +53,7 @@ class BM25(object):
                 score_D_Q += (self.idf[index] * (\
                     (f_qi_d * (self.k1 + 1))/\
                     (f_qi_d + self.k1 * (1 - self.b +self.b * d_by_avgdl))
-                ))
+                )) * w
             score[result['url']] =  score_D_Q
 
         #print(score)
