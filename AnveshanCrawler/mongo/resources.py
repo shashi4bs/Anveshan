@@ -13,6 +13,7 @@ class AnveshanResource(MongoPipeline):
         query = {name: {"$exists": "true"}}
         graph_result = self.graphs.find(query)
         link_result = self.links.find({name: {"$exists": "true"}})
+        print("in save graph", graph_result.count(), link_result.count())
         if graph_result.count() == 0:
             insert_query = {name: json.dumps(graph)}
             self.graphs.insert(insert_query)
@@ -25,6 +26,9 @@ class AnveshanResource(MongoPipeline):
                     {'_id': res['_id']},
                     update_query
                 )
+            
+            print('saving link test')
+
             for link_res in link_result:
                 update_query = {"$set": {name: links}}
                 self.links.update(
@@ -35,12 +39,14 @@ class AnveshanResource(MongoPipeline):
     def load_graph(self, name):
         query = {name: {"$exists": "true"}}
         graph = self.graphs.find(query)
+        print('graph', graph.count())
         json_graph = None
         link = None
         for g in graph:
             json_graph = json.loads(g[name])
         query = {name: {"$exists": "true"}}
         links = self.links.find(query)
+        print(links.count())
         for l in links:
             link = l[name]
         return json_graph, link

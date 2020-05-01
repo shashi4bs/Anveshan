@@ -62,23 +62,28 @@ class MongoPipeline(object):
         print("Saved ID")
         
 
-    def get_content_by_index(self, tokens):
+    def get_content_by_index(self, tokens, token_weights):
         index_search_result = []
         content_search_result = []
         for token in tokens:
             query = {token: {'$exists': 'true'}}
             result = self.db.index_url_map.find(query)
-            [index_search_result.append(r) for r in result]
+            [index_search_result.append((r, token_weights[token])) for r in result if (r, token_weights[token]) not in index_search_result]
 
         #search content for url
-        for r in index_search_result:
+        for (r, w) in index_search_result:
             #iterate over dict keys except _id
             for urls in list(r.values())[1:]:
+                urls = list(urls)
                 #search content over unique list of urls
+                #removing ambiguities
+                for url in np.array(urls):
+                    if(len(url) > 2):
+                        urls.remove(url)                
                 for url in set(np.array(urls)[:, 0]):
                     query = {'url': url}
                     result = self.db.content.find(query)
-                    [content_search_result.append(r) for r in result]
+                    [content_search_result.append((r, w)) for r in result if (r, w) not in content_search_result]        
         return index_search_result, content_search_result
 
     def get_content(self):
