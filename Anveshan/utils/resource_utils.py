@@ -89,4 +89,3 @@ def update_weights(graph, tags, user, user_resources, urls):
     anveshan_resource.save_pvector(p_vector, user.username)
     return
     
-    

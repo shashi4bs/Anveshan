@@ -7,9 +7,11 @@ from flask import request, redirect, url_for
 from flask_login import login_user, login_required, logout_user, current_user
 from utils.user_utils import register_user, validate_user
 from utils.resource_utils import load_user_resource, get_tag_from_content, update_weights
+from utils.query_utils import log_query
 from db import User
 import traceback
 from query import Query
+from utils.async_utils import run_in_parallel, test
 
 anveshan = Search(generate_pr_score=False)
 
@@ -25,6 +27,7 @@ def search(query):
     if current_user.is_authenticated:
         redirect("/{}/search/{}".format(current_user.username, query))
     try:
+        #add query to log
         query = Query(query)
         print(query)
         results = anveshan.search(query)
@@ -33,6 +36,9 @@ def search(query):
         response = []
         [(response.append({'_id': str(res['_id']), 'url': res['url'], 'title': res['title']}), urls.append(res['url'])) for res in results if res['url'] not in urls]
         response = {"search_results": response}
+        #log_query(query)
+        run_in_parallel(log_query, query)
+        run_in_parallel(test, "a", "b", "c")
         if query.do_you_mean:
                 response["do_you_mean"] = query.true_query
         return json.dumps(response)
@@ -57,9 +63,10 @@ def personalized_search(user, query):
         [(response.append({'_id': str(res['_id']), 'url': res['url'], 'title': res['title']}), urls.append(res['url'])) for res in results if res['url'] not in urls]
         
         response = {"search_results": response}
+        run_in_parallel(log_query, query, user.username)
+        run_in_parallel(log_query, query)
         if query.do_you_mean:
                 response["do_you_mean"] = query.true_query
-        return json.dumps(response)
         return json.dumps(response)
 
     except Exception as e:
@@ -111,7 +118,8 @@ def update_bias():
     _id = request.json['_id']
     tags = get_tag_from_content(_id)
     print(user_resources.keys())
-    update_weights(anveshan.graph.graph, tags, user, user_resources[user.username], anveshan.graph.links)
+    #update_weights(anveshan.graph.graph, tags, user, user_resources[user.username], anveshan.graph.links)
+    run_in_parallel(update_weights, anveshan.graph.graph, tags, user, user_resources[user.username], anveshan.graph.links)
     status = {
         'status' : 'OK',
         'code' : 200,
