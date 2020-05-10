@@ -18,5 +18,5 @@ def getWikipediaSpider(url, query, content_id):
 			#filter content
 			text_to_send = filter_text_from_content(page, query)
 			#print(text_to_send)
-			socketio.emit("content", {'data': text_to_send, "_id": content_id}, broadcast=True)
+			socketio.emit("content", {'data': text_to_send, "_id": content_id}, broadcast=False)
 	return wikipedia
