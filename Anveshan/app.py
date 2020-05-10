@@ -25,6 +25,7 @@ anveshan_user_db =  MongoAlchemy(app)
 #socketio
 socketio = SocketIO(app, cors_allowed_origins="*")
 
+
 from routes import routes, socket_routes
 
 if __name__ == "__main__":

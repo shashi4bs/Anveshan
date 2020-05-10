@@ -31,3 +31,7 @@ def handle_message(message):
 	except Exception as e:
 		print(e)
 
+
+@socketio.on("content")
+def send_content(data):
+	send(json.dumps(data))
