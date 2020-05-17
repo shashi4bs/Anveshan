@@ -11,8 +11,9 @@ from utils.query_utils import log_query
 from db import User
 import traceback
 from query import Query
-from utils.async_utils import run_in_parallel
+from utils.async_utils import run_in_parallel, run_process, test
 from crawlers.crawl import get_pages
+from parallel import kill_thread
 
 anveshan = Search(generate_pr_score=False)
 
@@ -28,6 +29,8 @@ def search(query):
     if current_user.is_authenticated:
         redirect("/{}/search/{}".format(current_user.username, query))
     try:
+        name="default"
+        kill_thread(name)
         #add query to log
         query = Query(query)
         print(query)
@@ -39,6 +42,7 @@ def search(query):
         response = {"search_results": response}
         #log_query(query)
         run_in_parallel(log_query, query)
+        run_process(test, 1, 2, 3)
         run_in_parallel(get_pages, response["search_results"], query)
         if query.do_you_mean:
                 response["do_you_mean"] = query.true_query

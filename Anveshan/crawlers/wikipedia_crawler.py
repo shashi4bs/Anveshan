@@ -2,6 +2,7 @@ import scrapy
 from crawlers.page import Page
 from crawlers.helper import filter_text_from_content
 from app import socketio
+import traceback
 
 def getWikipediaSpider(url, query, content_id):
 	class wikipedia(scrapy.Spider):
@@ -18,5 +19,11 @@ def getWikipediaSpider(url, query, content_id):
 			#filter content
 			text_to_send = filter_text_from_content(page, query)
 			#print(text_to_send)
-			socketio.emit("content", {'data': text_to_send, "_id": content_id}, broadcast=False)
+			try:
+				print("socket")
+				socketio.emit("content", {'data': text_to_send, "_id": content_id}, broadcast=False)
+				print("socket emit")
+			except Exception as e:
+				traceback.print_exc()
+				print("Exception", e)
 	return wikipedia

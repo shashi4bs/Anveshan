@@ -6,6 +6,9 @@ from flask_login import LoginManager
 from flask_cors import CORS
 from flask_socketio import SocketIO
 
+#import eventlet
+#eventlet.monkey_patch()
+
 sys.path.append(os.path.abspath("/home/vipul/Desktop/SE/Anveshan_Crawler/AnveshanCrawler"))
 
 sys.path.append(os.path.abspath("/home/vipul/Desktop/SE/Anveshan_Crawler"))
@@ -23,11 +26,13 @@ login_manager = LoginManager(app)
 anveshan_user_db =  MongoAlchemy(app)
 
 #socketio
-socketio = SocketIO(app, cors_allowed_origins="*")
+#socketio = SocketIO(app, cors_allowed_origins="*",)
+socketio = SocketIO()
+socketio.init_app(app, cors_allowed_origins="*", message_queue="redis://")
 
 
 from routes import routes, socket_routes
 
 if __name__ == "__main__":
-	socketio.run(app, host="0.0.0.0", port=5000)
+	socketio.run(app, host="0.0.0.0", port=5001)
 	#app.run()
