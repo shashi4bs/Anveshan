@@ -4,6 +4,8 @@ from bm25 import BM25
 from helper import combine_index_content_result, combine_score
 from pagerank.pagerank import PageRank
 from pagerank.graph import Graph
+from pagerank.helper import get_personalization_vector 
+from utils.resource_utils import save_personalization_vector
 
 class Search(object):
     def __init__(self, generate_pr_score=True):
@@ -11,11 +13,14 @@ class Search(object):
         self.content = self.db.get_content()
         self.graph = Graph(self.content)
         if generate_pr_score:
-            self.pr = PageRank(self.graph)
+            personalization_vector = get_personalization_vector(self.graph.graph, self.content)
+            self.pr = PageRank(self.graph, personalization=personalization_vector)
             print("calc pr")
             pr_score = self.pr.get_score()
             print("Saving pr to db")
             self.db.save_pr_score(pr_score)
+            #save persoanlization vector in db
+            save_personalization_vector(personalization_vector)
         else:
             self.pr = PageRank(
             graph = self.graph,\

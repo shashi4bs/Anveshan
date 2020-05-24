@@ -28,6 +28,22 @@ def generate_pr_matrix(content_search_result):
     pr_matrix = np.array(pr_matrix)
     return pr_matrix
 
+def trim_graph(graph, in_degree=0, out_degree=1):
+    #drop nodes with in_degree 0 and outdegree 1
+    print(len(list(graph.nodes)))
+    in_degrees = graph.in_degree(graph)
+    out_degrees = graph.out_degree(graph)
+    removed = 0
+    for n1, n2 in zip(in_degrees, out_degrees):
+        if n1[1] == in_degree and n2[1] == out_degree:
+            #remove node
+            removed += 1
+            graph.remove_node(n1[0])
+    print(len(list(graph.nodes)))
+    return graph, removed
+
+
+
 def generate_graph(content_search_result):
     
     #graph = nx.Graph()
@@ -42,10 +58,13 @@ def generate_graph(content_search_result):
         links.add(content['url'])
         [links.add(link) for link in content['links']]
 
+    
     links = list(links)
 
+    
     print("Generating {}  Nodes".format(len(links)))
-    graph.add_nodes_from([_ for _ in range(len(links))])
+    #graph.add_nodes_from([_ for _ in range(len(links))])
+    graph.add_nodes_from(links)
 
     print("Adding Edges")
     
@@ -55,53 +74,86 @@ def generate_graph(content_search_result):
         processed += 1
         for l in content['links']:
             #add content['links'] -> content['url']
-            edges.add((links.index(l), links.index(content['url'])))
-    
+            #edges.add((links.index(l), links.index(content['url'])))
+            edges.add((l, content['url']))
+
     edges = list(edges)
-    print(edges)
+    #print(edges)
     graph.add_edges_from(edges)
+
+    #trim graph
+    graph, removed = trim_graph(graph)
+    graph, removed = trim_graph(graph, 1, 0)
+    print("Removed Node : ", removed)
+    #print(graph.in_degree())
+    #print(graph.out_degree())
+    links = list(graph.nodes)
+
     return graph, links
 
-def extract_links(content_search_result):
+def extract_links(content_search_result, extract_internal_links=False):
     content_links = set()
     for content in content_search_result:
         content_links.add(content['url'])
-        [content_links.add(link) for link in content['links']]
+        if extract_internal_links:
+            [content_links.add(link) for link in content['links']]
 
     return list(content_links)
 
 def check_graph_for_consistency(links, content_search_result):
     
     content_links = extract_links(content_search_result)
+    #search each url in content_links if it is present in links
+    for link in content_links:
+        if link not in links:
+            return False
 
-    print(type(links),' ', type(content_links))
-    if len(links) != len(content_links):
-        return False
-    else:
-        return True
+    return True
+
 
 def make_graph_consistent(graph, links, content_search_result):
-    content_links = extract_links(content_search_result)
-
-    if len(links) != len(content_links):
-        node_list = list(graph.nodes)
-        max_node = max(node_list)
+    content_links = extract_links(content_search_result, extract_internal_links=True)
         
-        new_nodes_to_add = []
-        for i in range(1, len(content_links) - len(links) + 1):
-            new_nodes_to_add.append(max_node + i)
-        graph.add_nodes_from(new_nodes_to_add)
-
-        new_edges = set()
-        
-        #extract new links
-        new_links = list(set(content_links) - set(links))
-        links.extend(new_links)
-        for content in content_search_result:
-            if content['url'] in new_links:
-                for l in content["links"]:
-                    new_edges.add((links.index(l), links.index(content["url"])))
-        new_edges = list(new_edges)
-        graph.add_edges_from(new_edges)
+    new_nodes_to_add = set()
+    for link in content_links:
+        if link not in links:
+            new_nodes_to_add.add(link)
     
+    new_nodes_to_add = list(new_nodes_to_add)
+    #add new nodes to graph
+    graph.add_nodes_from(new_nodes_to_add)
+
+    new_edges = set()
+    
+    for content in content_search_result:
+        #if content url is new
+        if content['url'] in new_nodes_to_add:
+            for link in content["links"]:
+                new_edges.add((link, content["url"]))
+    
+    new_edges = list(new_edges)
+    graph.add_edges_from(new_edges)
+           
+    #remove nodes with in_degree=0 outdegree = 1
+    graph, removed = trim_graph(graph, 0, 0)
+    graph, removed = trim_graph(graph)
+    graph, removed = trim_graph(graph, 1, 0)
+    links = list(graph.nodes)
+    #update_resources(graph, links, content_search_result)
     return graph, links
+
+
+def get_personalization_vector(graph, contents=None):
+    links = list(graph.nodes)
+    personalization = dict()
+    for link in links:
+        personalization[link] = 0.2
+    if contents:
+        for content in contents:
+            url = content["url"]
+            personalization[url] = 0.5
+
+    return personalization
+
+def get_transformation_matrix(graph, alpha, nodelist, personalization):
+    return nx.google_matrix(graph, alpha=alpha, nodelist=nodelist, personalization=personalization)

@@ -1,35 +1,40 @@
-from pagerank.helper import generate_pr_matrix, generate_graph
+from pagerank.helper import generate_pr_matrix, generate_graph, get_personalization_vector, get_transformation_matrix
 import networkx as nx
+import numpy as np
+
 
 class PageRank(object):
-    def __init__(self, graph, score=None, alpha=0.99, personalization=None):
-        #print("Generating PageRank Matrix")
-        #self.pr_matrix = generate_pr_matrix(content_search_result)
-        #self.graph, self.links = generate_graph(content_search_result)
+    def __init__(self, graph, score=None, alpha=0.9, personalization=None):
         self.graph = graph.graph
         self.links = graph.links
         self.alpha = alpha
         if score:
             self.pr = score
         else:
+            '''
             self.pr = nx.pagerank(self.graph, \
                                 alpha=alpha,\
                                 max_iter=10,\
                                 tol=1e-03, 
                                 personalization=personalization)
-            pr = {}
-            for index in self.pr:
-                pr[self.links[index]] = self.pr[index]
-            self.pr = pr
+            '''
+            if not personalization:
+                personalization = get_personalization_vector(self.graph)
+            self.tr_matrix = get_transformation_matrix(self.graph, alpha=alpha, nodelist=self.graph.nodes, personalization=personalization)
+            #print(self.tr_matrix)
+            link_prob = [1 for _ in range(len(list(self.graph.nodes)))]
+            score = np.matmul(link_prob, self.tr_matrix)/len(personalization)
+            score = np.ravel(score)
+            #print(score)
+            #print(score.shape)
+            self.pr = {}
+            
+            for url, s in zip(list(self.graph.nodes), score):
+                self.pr[url] = s
+            
 
     def get_score(self):
-        #pr = nx.pagerank(self.graph, self.alpha)
-        score = {}
-        
-        for link in self.links:
-            score[link] = self.pr[link]
-            
-        return score
+        return self.pr
 
     def get_score_for_search(self, content_search_result):
         score = {}

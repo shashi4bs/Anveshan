@@ -9,9 +9,10 @@ from flask_socketio import SocketIO
 #import eventlet
 #eventlet.monkey_patch()
 
-sys.path.append(os.path.abspath("/home/vipul/Desktop/SE/Anveshan_Crawler/AnveshanCrawler"))
+sys.path.append(os.path.abspath("/home/shashi/Desktop/Anveshan_FYP/SE/Anveshan_Crawler/AnveshanCrawler"))
 
-sys.path.append(os.path.abspath("/home/vipul/Desktop/SE/Anveshan_Crawler"))
+sys.path.append(os.path.abspath("/home/shashi/Desktop/Anveshan_FYP/SE/Anveshan_Crawler"))
+sys.path.append(os.path.abspath("/home/shashi/Desktop/Anveshan_FYP/SE/Anveshan"))
 
 from constants import MONGODB_LINK
 app = Flask(__name__)

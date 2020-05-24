@@ -6,7 +6,7 @@ from bson import Binary
 from flask import request, redirect, url_for
 from flask_login import login_user, login_required, logout_user, current_user
 from utils.user_utils import register_user, validate_user
-from utils.resource_utils import load_user_resource, get_tag_from_content, update_weights
+from utils.resource_utils import load_user_resource, update_weights
 from utils.query_utils import log_query
 from db import User
 import traceback
@@ -15,7 +15,7 @@ from utils.async_utils import run_in_parallel, run_process, test
 from crawlers.crawl import get_pages
 from parallel import kill_thread
 
-anveshan = Search(generate_pr_score=False)
+anveshan = Search(generate_pr_score=True)
 
 user_resources = dict()
 
@@ -43,7 +43,7 @@ def search(query):
         #log_query(query)
         run_in_parallel(log_query, query)
         run_process(test, 1, 2, 3)
-        run_in_parallel(get_pages, response["search_results"], query)
+        #run_in_parallel(get_pages, response["search_results"], query)
         if query.do_you_mean:
                 response["do_you_mean"] = query.true_query
         return json.dumps(response)
@@ -70,7 +70,7 @@ def personalized_search(user, query):
         response = {"search_results": response}
         run_in_parallel(log_query, query, user.username)
         run_in_parallel(log_query, query)
-        run_in_parallel(get_pages, response["search_results"], query)
+        #run_in_parallel(get_pages, response["search_results"], query)
         if query.do_you_mean:
                 response["do_you_mean"] = query.true_query
         return json.dumps(response)
@@ -122,10 +122,9 @@ def update_bias():
     global user_resources
     user = current_user
     _id = request.json['_id']
-    tags = get_tag_from_content(_id)
     print(user_resources.keys())
-    #update_weights(anveshan.graph.graph, tags, user, user_resources[user.username], anveshan.graph.links)
-    run_in_parallel(update_weights, anveshan.graph.graph, tags, user, user_resources[user.username], anveshan.graph.links)
+    #update_weights(_id, user.username)
+    run_in_parallel(update_weights, _id, user.username)
     status = {
         'status' : 'OK',
         'code' : 200,

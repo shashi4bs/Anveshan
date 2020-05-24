@@ -2,19 +2,27 @@ import networkx as nx
 from pagerank.helper import generate_graph, check_graph_for_consistency, make_graph_consistent
 from mongo.resources import AnveshanResource
 import traceback
+from utils.resource_update import update_resources
 
 global anveshan_resource
 anveshan_resource = AnveshanResource()
 
 class Graph():
-    def __init__(self, content_search_result):
+    def __init__(self, content_search_result=None):
         try:
+            if not content_search_result:
+                self.load()
+                return
             self.load()
             is_graph_consistent = check_graph_for_consistency(self.links, content_search_result)
             print(is_graph_consistent)
             if not is_graph_consistent:
                 self.graph, self.links = make_graph_consistent(self.graph, self.links, content_search_result)
                 self.save()
+                #update user resources
+                update_resources(self.graph, self.links, content_search_result)
+
+
         except Exception as e:
             print(e)
             traceback.print_exc()
