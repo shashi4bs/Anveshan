@@ -5,8 +5,10 @@ import re
 import nltk
 from nltk.tokenize.toktok import ToktokTokenizer
 from nltk.stem import PorterStemmer
+import string
 tokenizer = ToktokTokenizer()
 stopword_list = nltk.corpus.stopwords.words('english')
+
 
 def strip_html_tags(text):
     soup = BeautifulSoup(text, "html.parser")
@@ -88,6 +90,7 @@ class Tokenizer(object):
         self.content = content.strip()
         self.tokens = self.tokenizer.tokenize(content)
         filtered_tokens = self.__removeStopWords()
+        filtered_tokens = self.__removeSpecialChars(filtered_tokens)
         #perfrom stemming
         filtered_tokens = self.__token_stemming(filtered_tokens)
         self.filtered_tokens = self.__get_frequency(filtered_tokens)
@@ -101,6 +104,18 @@ class Tokenizer(object):
             filtered_tokens = [token for token in tokens if token.lower() not in self.stopwords]
         #filtered_text = ' '.join(filtered_tokens)
         return filtered_tokens
+
+    def __removeSpecialChars(self, filtered_tokens):
+        punctuation_remover =  str.maketrans(dict.fromkeys(string.punctuation))
+        special_chars = ['(', ')', '[', ']', '"', "'", ".", ","]
+        print("type filtereed tokens", type(filtered_tokens))
+        processed = []
+        for token in filtered_tokens:
+            if token not in special_chars:
+                token = token.translate(punctuation_remover)
+                token = token.strip()
+                processed.append(token)
+        return processed
 
     def __get_frequency(self, tokens):
         filtered_tokens = dict()

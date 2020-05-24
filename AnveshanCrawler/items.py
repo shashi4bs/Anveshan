@@ -7,3 +7,4 @@ class Article(Item):
     tags = Field()
     lastUpdated = Field()
     links = Field()
+    content_matrix = Field()

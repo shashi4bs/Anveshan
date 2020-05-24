@@ -49,15 +49,17 @@ class MongoPipeline(object):
         for index in item['title']:
             self.__save_index(index, item)
 
-        #save url content
+        #save url content and content matrix
         query = {'url': item['url']} 
         num_entries = self.content.find(query).count()
         if num_entries == 0:
-            insert_query = {'url': item['url'], 'title': item['title'], 'tags': item['tags'], 'links':item['links'], 'doc_length': sum(item['content'].values())}
+            insert_query = {'url': item['url'], 'title': item['title'], 'tags': item['tags'], 'links':item['links'], 'content_matrix' : item['content_matrix'], 'doc_length': sum(item['content'].values())}
             self.content.insert(insert_query)
             print("Saved : {}".format(insert_query))
         else:
             pass
+
+
         #id_ = self.db.insert_one()
         print("Saved ID")
         
