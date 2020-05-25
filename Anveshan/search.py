@@ -44,7 +44,10 @@ class Search(object):
             self.content_search_result\
         )
         bm25 = BM25(query_tokens)
+        #print("tokens", query_tokens)
 
+        #print("combined result", combined_result)
+        
         #bm25 get_relevance_score for combined result
         score = bm25.get_relevance_score(combined_result)
         

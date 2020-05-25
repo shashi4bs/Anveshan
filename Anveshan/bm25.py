@@ -1,4 +1,7 @@
 import math
+from text_normalizer import Tokenizer
+
+tokenizer = Tokenizer()
 
 class BM25(object):
     def __init__(self, query, k1=1.5, b=0.75, epsilon=0.25):
@@ -42,7 +45,9 @@ class BM25(object):
 
         score = {}
         for (result, w) in results:
-			#w -> query token weight
+	    #w -> query token weight
+            #if query contains title of page assign title score
+            title_score = self.get_score_for_title(result)
             score_D_Q = 0
             for index in result['index']:
                 #f_qi_d = no of times term qi appeared in document d 
@@ -54,7 +59,18 @@ class BM25(object):
                     (f_qi_d * (self.k1 + 1))/\
                     (f_qi_d + self.k1 * (1 - self.b +self.b * d_by_avgdl))
                 )) * w
-            score[result['url']] =  score_D_Q
+            score[result['url']] =  score_D_Q + title_score
 
-        #print(score)
+        print(score)
         return score
+    
+    def get_score_for_title(self, result):
+        #process content in title
+        for t in result['title']:
+            tokens = tokenizer.processItem(t)
+            for token in tokens:
+                if token in self.query:
+                    return self.query[token] * (self.k1 + self.b + self.epsilon * 100)
+
+        return 0
+

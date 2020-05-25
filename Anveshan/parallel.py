@@ -73,7 +73,6 @@ class AsyncProcess(multiprocessing.Process):
     def run(self):
         try:
             self.task(*self.params)
-            self.terminate()
         finally:
             print("Process Execution End")
 
