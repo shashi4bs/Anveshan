@@ -55,7 +55,7 @@ class Query(object):
 			for token in token_dict:
 				if token not in final_tokens:
 					final_tokens[token] = token_dict[token]
-					token_weight[token] = 0.8
+					token_weight[token] = 0.6
 
 		return final_tokens, token_weight
 	

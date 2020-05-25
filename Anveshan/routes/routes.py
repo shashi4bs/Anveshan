@@ -15,7 +15,7 @@ from utils.async_utils import run_in_parallel, run_process, test
 from crawlers.crawl import get_pages
 from parallel import kill_thread
 
-anveshan = Search(generate_pr_score=True)
+anveshan = Search(generate_pr_score=False)
 
 user_resources = dict()
 
