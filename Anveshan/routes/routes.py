@@ -14,6 +14,7 @@ from query import Query
 from utils.async_utils import run_in_parallel, run_process, test
 from crawlers.crawl import get_pages
 from parallel import kill_thread
+from flask_request_validator import Param, Pattern, validate_params
 
 anveshan = Search(generate_pr_score=False)
 
@@ -29,8 +30,6 @@ def search(query):
     if current_user.is_authenticated:
         redirect("/{}/search/{}".format(current_user.username, query))
     try:
-        name="default"
-        kill_thread(name)
         #add query to log
         query = Query(query)
         print(query)
@@ -55,14 +54,16 @@ def search(query):
                 response["do_you_mean"] = query.true_query
         return json.dumps(response)
 
-@app.route('/<user>/search/<query>', methods=['GET'])
+@app.route('/<user>/search', methods=['POST'])
 @login_required
-def personalized_search(user, query):
-    print(user, query)
+def personalized_search(user):
+    query = request.json['query']
+    personalization = request.json['personalization']
+
     user = current_user
     try:
         query = Query(query)
-        results = anveshan.personalized_search(query, user_resources[user.username])
+        results = anveshan.personalized_search(query, user_resources[user.username], personalization=personalization)
         urls = []        
         response = []
         [(response.append({'_id': str(res['_id']), 'url': res['url'], 'title': res['title']}), urls.append(res['url'])) for res in results if res['url'] not in urls]
@@ -153,6 +154,22 @@ def logout():
     status['message'] = "Success"
     return status
     
+@app.route('/delete', methods=['GET'])
+@login_required
+def delete_account():
+    user = current_user
+    #delete user resources
+    #todo 
+    '''
+        delete user resources
+        delete user entry
+    '''
+    status = {}
+    status['status'] = "OK"
+    status['code'] = 200
+    status['message'] = 'Success Account Deleted'
+    return status
+
 @login_manager.unauthorized_handler
 def unauthorized():
     status = {}

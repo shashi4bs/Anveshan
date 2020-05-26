@@ -66,9 +66,13 @@ class Search(object):
         
         return sorted([content[0] for content in self.content_search_result], key=get_score, reverse=True)
 
-    def personalized_search(self, query, user_resource):
+    def personalized_search(self, query, user_resource, personalization=True):
         #user resource contain user specific pr_score, and personalization_vector
-        return self.search(query, user_resource)
+        if personalization:
+            return self.search(query, user_resource)
+        else:
+            return self.search(query)
+
 
 
 class result(object):
