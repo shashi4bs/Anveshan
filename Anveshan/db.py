@@ -8,7 +8,8 @@ class User(anveshan_user_db.Document, UserMixin):
     p_flag = anveshan_user_db.BoolField(default=False)
     bm25 = anveshan_user_db.IntField(required=False, min_value=0, max_value=1, default=1)
     pr = anveshan_user_db.IntField(required=False, min_value=0, max_value=1, default=1)
-
+    pr_inconsistent = anveshan_user_db.BoolField(default=False)
+    pr_updated = anveshan_user_db.BoolField(default=True)
     def get_id(self):
         return self.username
 

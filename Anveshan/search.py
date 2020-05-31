@@ -6,6 +6,7 @@ from pagerank.pagerank import PageRank
 from pagerank.graph import Graph
 from pagerank.helper import get_personalization_vector 
 from utils.resource_utils import save_personalization_vector
+from flask_login import current_user
 
 class Search(object):
     def __init__(self, generate_pr_score=True):
@@ -54,10 +55,13 @@ class Search(object):
         #pagerank
         if user_resource is None:
             pr_score = self.pr.get_score_for_search(self.content_search_result)
+            combined_score = combine_score(score, pr_score)
         else:
+            user = current_user
             pr_score = PageRank.filter_score_from_pr_score(self.content_search_result, user_resource["pr_score"])
+            combined_score = combine_score(score, pr_score, pr=user.pr, bm25 = user.bm25)
         #print(user_resource, pr_score)
-        combined_score = combine_score(score , pr_score)
+        #combined_score = combine_score(score , pr_score)
  
         def get_score(content):
             print(content['url'], ": BM25 : ", score[content['url']], "PR: ", pr_score[content['url']])
@@ -67,7 +71,10 @@ class Search(object):
         return sorted([content[0] for content in self.content_search_result], key=get_score, reverse=True)
 
     def personalized_search(self, query, user_resource, personalization=True):
+        user = current_user
+        print("pr: ",user.pr, "bm25: ", user.bm25)
         #user resource contain user specific pr_score, and personalization_vector
+        print("personalization", personalization)
         if personalization:
             return self.search(query, user_resource)
         else:

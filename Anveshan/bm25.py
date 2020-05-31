@@ -61,7 +61,7 @@ class BM25(object):
                 )) * w
             score[result['url']] =  score_D_Q + title_score
 
-        print(score)
+        #print(score)
         return score
     
     def get_score_for_title(self, result):

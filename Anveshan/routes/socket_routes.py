@@ -13,6 +13,7 @@ def connect():
 		queries = frequent_search(current_user.username)
 	else:
 		queries = frequent_search()
+		print(queries)
 	send(json.dumps({"frequent_search": queries}))
 
 @socketio.on("message")

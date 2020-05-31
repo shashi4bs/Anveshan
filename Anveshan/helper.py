@@ -35,12 +35,13 @@ def normalize_score(score):
         score[index] = (score[index] - min_score) / (max_score - min_score)
     return score
 
-def combine_score(bm25_score, pr_score):
+def combine_score(bm25_score, pr_score, pr=1, bm25=1):
+    print("check", pr, bm25)
     score = {}
     pr_score = normalize_score(pr_score)
     bm25_score = normalize_score(bm25_score)
     for index in bm25_score:
-        score[index] = bm25_score[index] + pr_score[index]
+        score[index] = (bm25 * bm25_score[index]) + (pr * pr_score[index])
 
     return score
 

@@ -7,7 +7,7 @@ from pagerank.graph import Graph
 import json
 import numpy as np
 from pagerank.helper import get_transformation_matrix
-#from db import User
+from db import User
 
 anveshan_resource = AnveshanResource()
 mongopipeline = MongoPipeline()
@@ -82,7 +82,7 @@ def get_similar_contents(content_matrix):
     return similar_contents
 
 #def update_weights(graph, tags, user, user_resources, urls):
-def update_weights(_id, username):
+def update_weight(_id, username):
     content = get_content(_id)
     tag = content['tags']
     content_matrix = content["content_matrix"]
@@ -129,6 +129,11 @@ def update_weights(_id, username):
     anveshan_resource.save_pr_score(pr_score, username)
     #save p_vector
     anveshan_resource.save_pvector(p_vector, username)
+    #update pr flags
+    user = User.query.filter(User.username == username).first()
+    print(user.pr_inconsistent, user.pr_updated)
+    user.pr_updated=True
+    user.save()
     return
     
 

@@ -6,7 +6,7 @@ from bson import Binary
 from flask import request, redirect, url_for
 from flask_login import login_user, login_required, logout_user, current_user
 from utils.user_utils import register_user, validate_user
-from utils.resource_utils import load_user_resource, update_weights
+from utils.resource_utils import load_user_resource, update_weight
 from utils.query_utils import log_query
 from db import User
 import traceback
@@ -42,7 +42,7 @@ def search(query):
         #log_query(query)
         run_in_parallel(log_query, query)
         run_process(test, 1, 2, 3)
-        #run_in_parallel(get_pages, response["search_results"], query)
+        run_in_parallel(get_pages, response["search_results"], query)
         if query.do_you_mean:
                 response["do_you_mean"] = query.true_query
         return json.dumps(response)
@@ -61,6 +61,11 @@ def personalized_search(user):
     personalization = request.json['personalization']
 
     user = current_user
+    print(user.pr_inconsistent, user.pr_updated)
+    if user.pr_inconsistent and user.pr_updated:
+        user_resources[user.username] = load_user_resource(current_user)
+        user.pr_inconsistent=False
+        user.save() 
     try:
         query = Query(query)
         results = anveshan.personalized_search(query, user_resources[user.username], personalization=personalization)
@@ -71,7 +76,7 @@ def personalized_search(user):
         response = {"search_results": response}
         run_in_parallel(log_query, query, user.username)
         run_in_parallel(log_query, query)
-        #run_in_parallel(get_pages, response["search_results"], query)
+        run_in_parallel(get_pages, response["search_results"], query)
         if query.do_you_mean:
                 response["do_you_mean"] = query.true_query
         return json.dumps(response)
@@ -116,6 +121,26 @@ def login():
 
     return status
 
+@app.route('/update_weights', methods=['POST'])
+@login_required
+def update_weights():
+    bm25 = request.json['bm25']
+    pr = request.json['pr']
+    status = {}
+    if bm25 <= 0 and pr <= 0:
+        status['status'] = "ERROR"
+        status['code'] = 422
+        status['message'] = 'Unprocessable Entity'
+        return status
+    user = current_user
+    user.bm25 = bm25
+    user.pr = pr
+    user.save()
+    status['status'] = "OK"
+    status['code'] = 200
+    status['messgae'] = "Success Weights Updated"
+    return status
+    
 
 @app.route('/update_bias', methods=['POST'])
 @login_required
@@ -124,8 +149,12 @@ def update_bias():
     user = current_user
     _id = request.json['_id']
     print(user_resources.keys())
-    #update_weights(_id, user.username)
-    run_in_parallel(update_weights, _id, user.username)
+    #update_weight(_id, user.username)
+    user.pr_inconsistent = True
+    user.pr_updated = False
+    user.save()
+    print(user.pr_inconsistent, user.pr_updated, user.username)
+    run_in_parallel(update_weight, _id, user.username)
     status = {
         'status' : 'OK',
         'code' : 200,

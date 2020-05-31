@@ -2,6 +2,8 @@ import threading
 import time
 import multiprocessing
 import ctypes
+from config import PARALLEL_PROCESS
+import queue
 
 
 class ThreadManager(object):
@@ -62,18 +64,29 @@ class AsyncJob(threading.Thread):
         for id, thread in threading._active.items():
             if thread is self:
                 return id
-        
+
 
 class AsyncProcess(multiprocessing.Process):
+    running_tasks = 0
+    queue = queue.Queue()
     def __init__(self, task, params):
         multiprocessing.Process.__init__(self, target=task, args=params)
         self.task = task
         self.params = params
+            
 
     def run(self):
         try:
-            self.task(*self.params)
+            AsyncProcess.running_tasks += 1
+            if AsyncProcess.running_tasks >= PARALLEL_PROCESS:
+                AsyncProcess.queue.put(self)
+            else:
+                self.task(*self.params)
         finally:
+            if not AsyncProcess.queue.empty():
+                process = AsyncProcess.queue.get()
+                process.task(*process.params)
+            AsyncProcess.running_tasks -= 1
             print("Process Execution End")
 
 
