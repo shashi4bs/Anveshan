@@ -12,9 +12,13 @@ class ArticleSpider(CrawlSpider):
     name = 'articleSpider'
     allowed_domains = ['wikipedia.org']
     #start_urls = ["https://en.wikipedia.org/wiki/Fruit"]
-    start_urls = ["https://en.wikipedia.org/"]
+    #start_urls = ["https://en.wikipedia.org/wiki/Mumbai"]
     #start_urls = ["https://en.wikipedia.org/wiki/Android_(operating_system)"]
-    
+    #start_urls = ["https://en.wikipedia.org/wiki/Question"]
+    #start_urls = ["https://en.wikipedia.org/wiki/COVID-19_pandemic"]
+    #start_urls = ["https://en.wikipedia.org/wiki/Stock_market_index"]
+    start_urls = ["https://en.wikipedia.org/wiki/Cooking"]
+
     rules = [
         #internalLinks
         Rule(LinkExtractor(allow='(en.wikipedia.org/wiki/)((?!:).)*$'), callback='parse_items', follow=True, cb_kwargs={'parse': True}),

@@ -108,7 +108,7 @@ class Tokenizer(object):
     def __removeSpecialChars(self, filtered_tokens):
         punctuation_remover =  str.maketrans(dict.fromkeys(string.punctuation))
         special_chars = ['(', ')', '[', ']', '"', "'", ".", ","]
-        print("type filtereed tokens", type(filtered_tokens))
+        #print("type filtereed tokens", type(filtered_tokens))
         processed = []
         for token in filtered_tokens:
             if token not in special_chars:
