@@ -44,20 +44,23 @@ class Search(object):
             self.index_search_result,\
             self.content_search_result\
         )
+
         bm25 = BM25(query_tokens)
         #print("tokens", query_tokens)
 
         #print("combined result", combined_result)
         
         #bm25 get_relevance_score for combined result
-        score = bm25.get_relevance_score(combined_result)
+        #score = bm25.get_relevance_score(combined_result, tags)
         
         #pagerank
         if user_resource is None:
+            score = bm25.get_relevance_score(combined_result)
             pr_score = self.pr.get_score_for_search(self.content_search_result)
             combined_score = combine_score(score, pr_score)
         else:
             user = current_user
+            score = bm25.get_relevance_score(combined_result, user.tags)
             pr_score = PageRank.filter_score_from_pr_score(self.content_search_result, user_resource["pr_score"])
             combined_score = combine_score(score, pr_score, pr=user.pr, bm25 = user.bm25)
         #print(user_resource, pr_score)
@@ -80,6 +83,8 @@ class Search(object):
         else:
             return self.search(query)
 
+    def search_contributions(self, query):
+        pass
 
 
 class result(object):

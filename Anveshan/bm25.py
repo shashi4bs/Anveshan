@@ -1,5 +1,6 @@
 import math
 from text_normalizer import Tokenizer
+from config import TAGWEIGHT
 
 tokenizer = Tokenizer()
 
@@ -34,7 +35,7 @@ class BM25(object):
             (total_retrieved_documents / (self.idf[q] + 0.1)))
         return self.idf
 
-    def get_relevance_score(self, results):
+    def get_relevance_score(self, results, tags=None):
         
         #self.idf = _get_idf(results)
         self._get_idf([r[0] for r in results])
@@ -48,6 +49,16 @@ class BM25(object):
 	    #w -> query token weight
             #if query contains title of page assign title score
             title_score = self.get_score_for_title(result)
+            #add tag bias on bm25 score
+            processed_tags = []
+            if tags and len(tags)>0:
+                for t in tags:
+                    for p_t in tokenizer.processItem(t):
+                        processed_tags.append(p_t)
+
+
+            #print(processed_tags)
+
             score_D_Q = 0
             for index in result['index']:
                 #f_qi_d = no of times term qi appeared in document d 
@@ -59,6 +70,10 @@ class BM25(object):
                     (f_qi_d * (self.k1 + 1))/\
                     (f_qi_d + self.k1 * (1 - self.b +self.b * d_by_avgdl))
                 )) * w
+
+                #add tag bias here
+                if index in processed_tags:
+                    score_D_Q += TAGWEIGHT
             score[result['url']] =  score_D_Q + title_score
 
         #print(score)

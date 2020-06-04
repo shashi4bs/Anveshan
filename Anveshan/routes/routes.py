@@ -3,18 +3,19 @@ import os
 from search import Search
 import json
 from bson import Binary
-from flask import request, redirect, url_for
+from flask import request, redirect, url_for, session
 from flask_login import login_user, login_required, logout_user, current_user
 from utils.user_utils import register_user, validate_user
 from utils.resource_utils import load_user_resource, update_weight
 from utils.query_utils import log_query
-from db import User
+from db import User, UserContributions
 import traceback
 from query import Query
 from utils.async_utils import run_in_parallel, run_process, test
-from crawlers.crawl import get_pages
+from crawlers.crawl import get_pages, crawl_pages
 from parallel import kill_thread
 from flask_request_validator import Param, Pattern, validate_params
+
 
 anveshan = Search(generate_pr_score=False)
 
@@ -24,6 +25,8 @@ user_resources = dict()
 @app.route('/home')
 def home():
     return "Anveshan"
+
+
 
 @app.route('/search/<query>', methods=['GET'])
 def search(query):
@@ -112,6 +115,7 @@ def login():
     remember_me = user['remember_me']
     
     status, user = validate_user(user)
+    print(user, status)
     if status['code'] == 200:
         #session['username'] = user.username 
         login_user(user, remember=remember_me)
@@ -140,7 +144,42 @@ def update_weights():
     status['code'] = 200
     status['messgae'] = "Success Weights Updated"
     return status
-    
+   
+@app.route('/details', methods=['GET'])
+@login_required
+def user_details():
+    user = current_user
+    tags = user.tags
+    if len(tags)>5:
+        tag = tag[:5]
+    return json.dumps(
+        {
+            'tags' : user.tags,
+            'bm25' : user.bm25,
+            'pr' : user.pr
+        }
+    )
+
+@app.route('/set_tag', methods=['POST'])
+@login_required
+def set_tags():
+    tags = request.json["tags"]
+    user = current_user
+    if type(tags) == list:
+        user.tags = tags
+        user.save()
+        status = {
+            "status" : "OK",
+            "code" : 200,
+            "message" : "Tags Updated"
+        }
+        return status
+    else:
+        status = {
+            "status" : "ERROR",
+            "code" : 422,
+            "message" : "Invalid Tag"
+        }
 
 @app.route('/update_bias', methods=['POST'])
 @login_required
@@ -162,6 +201,35 @@ def update_bias():
     }
     return status
 
+@app.route('/contribute', methods=['POST'])
+def contribute():
+    url = request.json["url"]
+    tags = request.json["tags"]
+    description = request.json["description"]
+    user = current_user
+    try:
+        contribution = UserContributions.query.filter(UserContributions.url == url).first()
+        print(contribution)
+        if not contribution:
+            contribution = UserContributions()
+            contribution.tags = tags
+            contribution.description = description
+            contribution.url = url.encode()
+            contribution.save()
+        #crawl_pages(url, user.username)
+        status = {
+            "status" : "OK",
+            "code" : 200,
+            "message" : "Page Added"
+        }
+    except Exception as e:
+        print(e)
+        status = {
+            "status" : "ERROR",
+            "code" : 422,
+            "message" : "Unprocessable Entity"
+        }
+    return status        
 
 @login_manager.user_loader
 def load_user(username):
@@ -207,3 +275,11 @@ def unauthorized():
     status['message'] = "Anauthorized"
     return status
 
+@app.after_request
+def after(res):
+    #r = json.loads(res.get_data())
+    #if current_user.is_authenticated:
+    #    print(session)
+    #    #r['s_id'] = session['_id']
+    #res.set_data(json.dumps(r))
+    return res

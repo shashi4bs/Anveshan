@@ -51,4 +51,6 @@ def get_pages(response, query):
             #run_spider.apply_async(args=[spider,])
 
 
-
+def crawl_pages(url, username):
+    spider = getGeneralCrawler(url, username)
+    run_process(run_spider, spider)

@@ -32,7 +32,7 @@ def getWikipediaSpider(url, query, content_id):
             #print(text_to_send)
             try:
                 print("socket")
-                socketio.emit("content", {'data': text_to_send, "_id": content_id}, broadcast=False)
+                socketio.emit("content", {'data': text_to_send, "_id": content_id}, broadcast=True)
                 print("socket emit")
             except Exception as e:
                 traceback.print_exc()

@@ -18,10 +18,13 @@ from constants import MONGODB_LINK
 app = Flask(__name__)
 app.secret_key = "secret"
 app.config["MONGOALCHEMY_DATABASE"] = "AnveshanUser"
-
+app.config.update({
+'SESSION_COOKIE_SECURE': True,
+'REMEMBER_COOKIE_SECURE' : True
+})
 #cors
 
-cors = CORS(app)
+cors = CORS(app, origin="*")
 
 login_manager = LoginManager(app)
 anveshan_user_db =  MongoAlchemy(app)
@@ -29,6 +32,7 @@ anveshan_user_db =  MongoAlchemy(app)
 #socketio
 #socketio = SocketIO(app, cors_allowed_origins="*",)
 socketio = SocketIO()
+app.config['SESSION_TYPE'] = 'filesystem'
 socketio.init_app(app, cors_allowed_origins="*", message_queue="redis://")
 
 
